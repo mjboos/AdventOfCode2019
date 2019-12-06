@@ -1,0 +1,99 @@
+import numpy as np
+
+def load_input():
+    with open('input.txt', 'r') as fl:
+        codes = fl.read().split(',')
+    return [int(code) for code in codes]
+
+def process_opcode(opcode):
+    '''Processes opcode according to parameter mode'''
+    return opcode[-1], opcode[:-2][::-1]
+
+def is_parmode(opcode):
+    '''Tests if opcode is in parameter mode'''
+    if opcode > 10:
+        return True
+    else:
+        return False
+
+def get_args(pars, parmodes, codes):
+    assert len(pars) == len(parmodes)
+    return_args = []
+    for par, parmode in zip(pars, parmodes):
+        if parmode == '0':
+            return_args.append(codes[int(par)])
+        elif parmode == '1':
+            return_args.append(par)
+    return return_args
+
+
+
+def opcode1(codes, curr_pos, *args):
+    codes[codes[curr_pos+3]] = args[0] + args[1]
+    curr_pos += 4
+    return curr_pos
+
+def opcode2(codes, curr_pos, *args):
+    codes[codes[curr_pos+3]] = args[0] * args[1]
+    curr_pos += 4
+    return curr_pos
+
+def opcode3(codes, curr_pos, *args):
+    codes[codes[curr_pos+1]] = int(input())
+    curr_pos += 2
+    return curr_pos
+
+def opcode4(codes, curr_pos, *args):
+    print(args[0])
+    curr_pos += 2
+    return curr_pos
+
+def opcode5(codes, curr_pos, *args):
+    if args[0] != 0:
+        curr_pos = args[1]
+    else:
+        curr_pos += 3
+    return curr_pos
+
+def opcode6(codes, curr_pos, *args):
+    if args[0] == 0:
+        curr_pos = args[1]
+    else:
+        curr_pos += 3
+    return curr_pos
+
+def opcode7(codes, curr_pos, *args):
+    codes[args[2]] = 1 if args[0] < args[1] else 0
+    curr_pos += 4
+    return curr_pos
+
+def opcode8(codes, curr_pos, *args):
+    codes[args[2]] = 1 if args[0] == args[1] else 0
+    curr_pos += 4
+    return curr_pos
+
+command_dict = {1: opcode1, 2: opcode2, 3: opcode3, 4: opcode4,
+                5: opcode5, 6: opcode6, 7: opcode7, 8: opcode8}
+
+command_lens = {1: 3, 2: 3, 3: 1, 4: 1, 5: 2, 6: 2, 7: 3, 8: 3}
+default_parmodes = {1: [0, 0, 1], 2: [0, 0, 1], 3: [0], 4: [0],
+                    5: [0, 0], 6: [0, 0], 7: [0, 0, 1], 8: [0, 0, 1]}
+
+def process_input(codes):
+    codes = [c for c in codes]
+    curr_pos = 0
+    while codes[curr_pos] != 99:
+        if is_parmode(codes[curr_pos]):
+            opcode = [int(digit) for digit in str(codes[curr_pos])]
+            opcode, parmodes = process_opcode(opcode)
+            parmodes += default_parmodes[opcode][len(parmodes):]
+        else:
+            opcode = codes[curr_pos]
+            parmodes = default_parmodes[opcode]
+        args = [codes[codes[curr_pos+1+i]] if parmodes[i] == 0 else codes[curr_pos+1+i] for i in range(command_lens[opcode])]
+        curr_pos = command_dict[opcode](codes, curr_pos, *args)
+    return codes
+
+if __name__=='__main__':
+    inputs = load_input()
+    codes = process_input(inputs)

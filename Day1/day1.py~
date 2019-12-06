@@ -1,0 +1,21 @@
+import numpy as np
+
+def load_input(fl=None):
+    if fl is None:
+        fl = 'input.txt'
+    with open(fl, 'r') as fl_p:
+        lines = fl_p.readlines()
+    return [int(ln) for ln in lines]
+
+def calculate_fuel(mass):
+    return np.floor(mass / 3) - 2
+
+def recursive_calc_fuel(mass):
+    fuel_mass = max(calculate_fuel(mass), 0)
+    while fuel_mass > 0:
+        yield fuel_mass
+        fuel_mass = max(calculate_fuel(fuel_mass), 0)
+
+test_cases = [(14, 2),
+               1969, 966),
+               (100756, 50346)]
